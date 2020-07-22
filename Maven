@@ -1,0 +1,143 @@
+1. If yu want to run single test
+mvn -Dtest=test_case_name test
+2. If yu need to group of class(smoke testcase)
+for this we need to add profile and id
+<profile>
+    <id>Smoke</id>  
+after that need to add maven surefire plugin
+mvn test -P#Smoke_Regression
+3. Jenkins to start with cmd by following command
+need to provide jenkins war file path in cmd prompt
+java -jar jenkins.war -httpPort=8080
+4. how to configure build schedule in jendkin?
+M(min) H(hour) D(day in month) M(month) Dayweek(every day in a week) 
+5. Extent report creation?
+yu should have ExtentReports and ExtentSparkReporter class
+ExtentSparlReporter is used to set up path and report name and document title.
+code are below:
+String path =System.getProperty("user.dir")+"\\reports\\index.html";
+
+ExtentSparkReporter reporter = new ExtentSparkReporter(path);
+
+reporter.config().setReportName("Web Automation Results");
+
+reporter.config().setDocumentTitle("Test Results");
+
+extent =new ExtentReports();
+
+extent.attachReporter(reporter);
+
+extent.setSystemInfo("Tester", "Rahul Shetty");
+
+ExtentTest test= extent.createTest("Initial Demo"); //@Test methiod
+6. Excel with eclipse?
+
+public ArrayList<String> getdata(String testcasename) throws IOException {
+		ArrayList<String> a=new ArrayList<String>();
+
+		FileInputStream fis=new FileInputStream("C://Users//195300//Desktop//Book1.xlsx");
+		XSSFWorkbook workbook=new XSSFWorkbook(fis);
+
+		int sheets=workbook.getNumberOfSheets();
+		for(int i=0;i<sheets;i++)
+		{
+		if(workbook.getSheetName(i).equalsIgnoreCase("testdata"))
+		{
+		XSSFSheet sheet=workbook.getSheetAt(i);
+		//Identify Testcases coloum by scanning the entire 1st row
+
+		Iterator<Row>  rows= sheet.iterator();// sheet is collection of rows
+		Row firstrow= rows.next();
+		Iterator<Cell> ce=firstrow.cellIterator();//row is collection of cells
+		int k=0;
+		int coloumn = 0;
+		while(ce.hasNext())
+		{
+		Cell value=ce.next();
+
+		if(value.getStringCellValue().equalsIgnoreCase("Testcase"))
+		{
+		coloumn=k;
+
+		}
+
+		k++;
+		}
+		System.out.println(coloumn);
+
+		////once coloumn is identified then scan entire testcase coloum to identify purcjhase testcase row
+		while(rows.hasNext())
+		{
+
+		Row r=rows.next();
+
+		if(r.getCell(coloumn).getStringCellValue().equalsIgnoreCase(testcasename))
+		{
+
+		////after you grab purchase testcase row = pull all the data of that row and feed into test
+
+		Iterator<Cell>  cv=r.cellIterator();
+		while(cv.hasNext())
+		{
+		Cell c= cv.next();
+		if(c.getCellTypeEnum()==CellType.STRING)
+		{
+
+		a.add(c.getStringCellValue());
+		}
+		else{
+
+		a.add(NumberToTextConverter.toText(c.getNumericCellValue()));
+
+		}
+		}
+		}
+
+		}
+		}
+		}
+		return a;
+
+		}  
+7. Page object model:
+Easy to maintain.
+Easily readable
+Reduce duplicacy
+Reliability    
+
+8. Page Factory
+@FindBy      
+9. how to access another class?
+1. inheritance
+2. creating object
+10. this refers to class variable.
+11. Taking screenshot
+
+BaseClass
+public void getScreenshot(String testcasename, WebDriver driver ) throws IOException {
+		TakesScreenshot ts = (TakesScreenshot)driver;
+		File src = ts.getScreenshotAs(OutputType.FILE);
+		String des = System.getProperty("user.dir")+"//reports//"+testcasename+".png";
+		FileUtils.copyFile(src, new File(des));
+
+ITestListeners
+public void onTestFailure(ITestResult result) {
+		// TODO Auto-generated method stub
+		WebDriver driver = null;
+		String testMethodname=result.getMethod().getMethodName();
+		try {
+			driver =(WebDriver)result.getTestClass().getRealClass().getDeclaredField("driver").get(result.getInstance());
+		} catch (Exception e) {
+		}
+		try {
+			getScreenshot(testMethodname, driver);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	} 
+
+12. Thread safe in parallel execution for extentreport
+ThreadLocal<ExtentTest> extentTest =  new ThreadLocal<ExtentTest>();
+extentTest.set(test);
+we have concept called threadlocal and need to set and get it back when it required
